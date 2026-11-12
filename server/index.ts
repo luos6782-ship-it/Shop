@@ -880,6 +880,9 @@ v6.on('error', () => {})
 v6.listen(PORT, '::1')
 server.listen(PORT, '127.0.0.1', () => {
   console.log(`Sloth en http://localhost:${PORT}`)
+  // El APK de Android entra por la dirección de esta computadora en la red: si la abriste con `SLOTH_HOSTS`, se dice.
+  const hostsAbiertos = (process.env.SLOTH_HOSTS ?? '').split(',').map((host) => host.trim()).filter(Boolean)
+  if (hostsAbiertos.length) console.log(`Abierto también en ${hostsAbiertos.map((host) => `http://${host}`).join(', ')} (SLOTH_HOSTS).`)
   setTimeout(() => {
     cargandoModelos = false
     pedirModelos()
