@@ -8,7 +8,7 @@
   "scripts": {
     "start": "node scripts/start.mjs",
     "serve": "node --import tsx server/index.ts",
-    "web:build": "node scripts/armar-web.mjs",
+    "build": "node scripts/armar-web.mjs",
     "test": "node --import tsx --test server/*.test.ts shared/*.test.ts web/src/*.test.ts electron/*.test.ts licencias/src/*.test.ts",
     "typecheck": "tsc --noEmit && tsc --noEmit -p nube && tsc --noEmit -p licencias",
     "comprobar-skills": "node scripts/comprobar-skills.mjs",
