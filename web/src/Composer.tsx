@@ -579,7 +579,10 @@ export function Composer(props: {
   const trabajando = props.running || props.background
 
   async function submit() {
-    if (empty || !choice || busy || uploading || props.bloqueo) return
+    // Con un bloqueo (falta conectar la IA) no se manda, pero el botón sí contesta: un botón muerto no explica nada y
+    // en el teléfono parece que la app no obedece.
+    if (props.bloqueo) return void setError(props.bloqueo)
+    if (empty || !choice || busy || uploading) return
     setBusy(true)
     setError('')
     try {
@@ -749,7 +752,7 @@ export function Composer(props: {
           <button
             className="send"
             title={props.bloqueo ?? (props.running ? 'Enviar ya, en mitad del turno (Enter)' : 'Enviar (Enter)')}
-            disabled={empty || busy || uploading > 0 || !!props.bloqueo}
+            disabled={empty || busy || uploading > 0}
             onClick={() => submit()}
           >
             ↑
