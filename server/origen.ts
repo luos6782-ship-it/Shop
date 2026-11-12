@@ -9,6 +9,10 @@ export function peticionDeConfianza(req: Pick<IncomingMessage, 'headers' | 'meth
   // `SLOTH_HOSTS` suma las direcciones desde las que se abre Sloth fuera de esta computadora: la del APK de Android o la
   // de otro equipo de la red (`SLOTH_HOSTS=192.168.1.10:4848`). Sin ella, solo la ventana de esta máquina.
   const extra = (process.env.SLOTH_HOSTS ?? '').split(',').map((host) => host.trim()).filter(Boolean)
+  // En el servidor (`SLOTH_ABIERTO=1`, el despliegue al que entra el teléfono por HTTPS) no hay una dirección fija que
+  // apuntar: vale el mismo host que sirve la página, y solo ese. Una página de otro sitio manda su `Origin`, que no
+  // coincide, y sigue sin poder usar la API.
+  if (process.env.SLOTH_ABIERTO === '1' && mismoSitio(req)) return true
   const propios = [`localhost:${puerto}`, `127.0.0.1:${puerto}`, ...extra]
   if (!propios.includes(req.headers.host ?? '')) return false
   const origen = req.headers.origin
@@ -29,4 +33,20 @@ export function peticionDeConfianza(req: Pick<IncomingMessage, 'headers' | 'meth
   const sitio = req.headers['sec-fetch-site']
   if (sitio && sitio !== 'same-origin' && sitio !== 'none') return false
   return propio
+}
+
+/** La página y su `Origin` son el mismo host: es la propia app la que pide, no otra página abierta en el navegador. */
+function mismoSitio(req: Pick<IncomingMessage, 'headers'>): boolean {
+  const host = req.headers.host
+  if (!host) return false
+  const origen = req.headers.origin
+  if (origen) {
+    try {
+      return new URL(origen).host === host
+    } catch {
+      return false
+    }
+  }
+  const sitio = req.headers['sec-fetch-site']
+  return !sitio || sitio === 'same-origin' || sitio === 'none'
 }

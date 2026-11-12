@@ -798,7 +798,13 @@ async function api(req: IncomingMessage, res: ServerResponse, url: URL): Promise
 const server = createServer()
 // Compilada, la interfaz ya viene armada en `web/` (`scripts/compilar.mjs`); aquí la sirve Vite, que la recarga con cada cambio.
 // Vite se importa en esta rama, que la compilada descarta: importado dentro de la función, la app que se vende lo pedía.
-const interfaz = VENTA ? estaticos(join(APP, 'web')) : await interfazDelRepo(await import('vite'), (await import('@vitejs/plugin-react')).default)
+// La interfaz armada para el servidor de la nube (`npm run web:build`, dist/web) se sirve tal cual, sin Vite.
+const WEB_ARMADA = join(APP, 'dist', 'web')
+const interfaz = VENTA
+  ? estaticos(join(APP, 'web'))
+  : existsSync(join(WEB_ARMADA, 'index.html'))
+    ? estaticos(WEB_ARMADA)
+    : await interfazDelRepo(await import('vite'), (await import('@vitejs/plugin-react')).default)
 
 /**
  * La interfaz del repo, con Vite: cada cambio en `web/` recarga la página. Con React de producción, como la que se vende:
@@ -873,13 +879,18 @@ server.on('upgrade', (req, socket, head) => {
   })
 })
 
+// En el servidor (el despliegue al que entra el teléfono) escucha en todas las direcciones; en la computadora, solo en
+// la suya, que es lo que impide que otra máquina de la red abra la API sin querer.
+const ABIERTO = process.env.SLOTH_ABIERTO === '1'
+const HOST = process.env.SLOTH_HOST ?? (ABIERTO ? '0.0.0.0' : '127.0.0.1')
+const bucle = HOST === '127.0.0.1' || HOST === 'localhost'
 // `localhost` también por IPv6 (::1), que Windows prueba primero: sin nadie escuchando ahí, cada conexión de curl o de un
 // agente esperaba unos 200 ms antes de probar 127.0.0.1. Las conexiones van al mismo servidor. Sin IPv6, queda 127.0.0.1.
 const v6 = servidorTcp((socket) => server.emit('connection', socket))
 v6.on('error', () => {})
-v6.listen(PORT, '::1')
-server.listen(PORT, '127.0.0.1', () => {
-  console.log(`Sloth en http://localhost:${PORT}`)
+if (bucle) v6.listen(PORT, '::1')
+server.listen(PORT, HOST, () => {
+  console.log(ABIERTO ? `Sloth en el servidor, puerto ${PORT} (${HOST})` : `Sloth en http://localhost:${PORT}`)
   // El APK de Android entra por la dirección de esta computadora en la red: si la abriste con `SLOTH_HOSTS`, se dice.
   const hostsAbiertos = (process.env.SLOTH_HOSTS ?? '').split(',').map((host) => host.trim()).filter(Boolean)
   if (hostsAbiertos.length) console.log(`Abierto también en ${hostsAbiertos.map((host) => `http://${host}`).join(', ')} (SLOTH_HOSTS).`)
