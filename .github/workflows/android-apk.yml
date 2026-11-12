@@ -60,6 +60,13 @@ jobs:
             convert web/public/icon-512.png -resize "$medida" "$archivo"
           done
 
+      # Sin firma fija, Gradle genera una distinta en cada compilación y Android rechaza instalar el APK nuevo
+      # encima del anterior («Aplicación no instalada»). Con esta, el APK se instala y se actualiza sin desinstalar.
+      - name: Firma de depuración fija
+        run: |
+          mkdir -p "$HOME/.android"
+          cp .github/android-debug.keystore "$HOME/.android/debug.keystore"
+
       - name: Compilar el APK
         run: |
           cd android
