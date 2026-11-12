@@ -63,22 +63,23 @@
     <main>
       <img src="icon.svg" alt="Sloth" />
       <h1>Conecta tu Sloth</h1>
-      <p>Escribe la dirección de la computadora donde corre Sloth.</p>
+      <p>Sloth ya viene apuntado a la app publicada. Pulsa «Abrir Sloth»; si prefieres tu computadora, escribe su dirección.</p>
 
       <label for="servidor">Dirección</label>
       <input id="servidor" type="url" inputmode="url" autocapitalize="none" autocorrect="off" spellcheck="false"
-        placeholder="http://192.168.1.10:4848" />
+        placeholder="https://qdppxqss2z.dev.onappjet.com" />
       <button id="abrir" type="button">Abrir Sloth</button>
       <div class="error" id="error"></div>
 
       <div class="ayuda">
-        En la computadora, arranca Sloth aceptando esta dirección:
-        <code>SLOTH_HOSTS=192.168.1.10:4848 npm start</code>. Las dos cosas tienen que estar en la misma red Wi-Fi.
+        Sin cambiar nada, Sloth abre la app publicada (<code>qdppxqss2z.dev.onappjet.com</code>). Para usar el Sloth de tu
+        computadora, arranca con <code>SLOTH_HOSTS=192.168.1.10:4848 npm start</code> y escribe esa dirección: las dos cosas
+        tienen que estar en la misma red Wi-Fi.
       </div>
     </main>
     <script>
-      // La dirección se guarda solo en este teléfono; la app la vuelve a proponer la próxima vez que se abre.
-      const clave = 'sloth-servidor'
+      // La app publicada: el APK abre Sloth sin escribir nada. Se puede cambiar por la dirección de una computadora.
+      const PUBLICADA = 'https://qdppxqss2z.dev.onappjet.com'
       const campo = document.getElementById('servidor')
       const error = document.getElementById('error')
 
@@ -91,12 +92,12 @@
 
       const guardada = localStorage.getItem(clave)
       const deEnlace = new URLSearchParams(location.search).get('url')
-      campo.value = normalizar(deEnlace || guardada || '')
+      campo.value = normalizar(deEnlace || guardada || PUBLICADA)
 
       function abrir() {
         const url = normalizar(campo.value)
         if (!/^https?:\/\/[^/\s]+(:\d+)?$/i.test(url)) {
-          error.textContent = 'Escribe una dirección como http://192.168.1.10:4848'
+          error.textContent = 'Escribe una dirección como https://qdppxqss2z.dev.onappjet.com'
           return
         }
         localStorage.setItem(clave, url)

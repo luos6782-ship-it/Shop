@@ -6,9 +6,9 @@ on:
   workflow_dispatch:
     inputs:
       servidor:
-        description: 'Dirección de Sloth que abrirá el APK (vacío = pantalla para escribirla)'
+        description: 'Dirección de Sloth que abrirá el APK (vacío = la app publicada)'
         required: false
-        default: ''
+        default: 'https://qdppxqss2z.dev.onappjet.com'
   push:
     branches: [main, appjet]
     paths:
@@ -43,7 +43,9 @@ jobs:
       # pantalla de `android-web/` dentro del APK.
       - name: Proyecto Android
         env:
-          SLOTH_URL: ${{ github.event.inputs.servidor }}
+          # Sin dirección escrita a mano, el APK abre la app publicada; el input sigue sirviendo para apuntarlo a una
+          # computadora de la red Wi-Fi.
+          SLOTH_URL: ${{ github.event.inputs.servidor || 'https://qdppxqss2z.dev.onappjet.com' }}
         run: |
           if [ ! -d android ]; then npx cap add android; fi
           npx cap sync android
