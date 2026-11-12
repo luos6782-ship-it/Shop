@@ -910,7 +910,7 @@ function NewSession(props: {
         autoFocus
         draft={props.draft}
         onDraft={props.onDraft}
-        bloqueo={sinCuenta ? 'Primero conecta tu cuenta (arriba)' : undefined}
+        bloqueo={sinCuenta ? 'Conecta tu IA arriba para empezar' : undefined}
         placeholder={card.skill ? `Qué quieres de /${card.skill}…` : 'Qué cambio quieres en Sloth…'}
         modelos={<Modelos conf={card.modelos} models={models} avanzado={avanzado} choice={choice} tareas={tareas} sinClaude={sinClaude} onAvanzado={cambiarModelos} />}
         extra={
