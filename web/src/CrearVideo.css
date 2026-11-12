@@ -1,0 +1,152 @@
+/* «Crear video»: el formulario, el lienzo donde se dibuja y lo ya hecho. */
+.crear {
+  padding: 24px clamp(16px, 4vw, 40px) 80px;
+  max-width: 980px;
+  margin: 0 auto;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+}
+.crear-head h1 {
+  margin: 0 0 6px;
+  font-size: 22px;
+}
+.crear-head p {
+  margin: 0;
+  max-width: 62ch;
+  line-height: 1.5;
+}
+.crear-campo {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  font-size: 13px;
+  color: var(--texto-2, #b9b3c9);
+}
+.crear-campo input,
+.crear-campo textarea {
+  font: inherit;
+  font-size: 15px;
+  color: inherit;
+  background: var(--panel, #17131f);
+  border: 1px solid var(--borde, #2c2738);
+  border-radius: 12px;
+  padding: 12px 14px;
+  resize: vertical;
+}
+.crear-campo input:focus,
+.crear-campo textarea:focus {
+  outline: 2px solid var(--amber, #9b7bff);
+  outline-offset: 1px;
+}
+.crear-acciones {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+.crear-boton {
+  font: inherit;
+  font-weight: 650;
+  padding: 12px 22px;
+  border-radius: 999px;
+  border: 0;
+  background: var(--amber, #9b7bff);
+  color: var(--sobre-ambar, #140a2e);
+  cursor: pointer;
+}
+.crear-boton:disabled {
+  opacity: 0.7;
+  cursor: progress;
+}
+.crear-pista {
+  font-size: 12px;
+  color: var(--texto-2, #b9b3c9);
+}
+.crear-lienzo {
+  width: 100%;
+  max-width: 280px;
+  aspect-ratio: 9 / 16;
+  border-radius: 16px;
+  border: 1px solid var(--borde, #2c2738);
+  background: #0f0722;
+}
+.crear-resultado {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  padding-top: 6px;
+}
+.crear-resultado h2,
+.crear-hechos h2 {
+  margin: 0;
+  font-size: 15px;
+  letter-spacing: 0.02em;
+  color: var(--texto-2, #b9b3c9);
+  text-transform: uppercase;
+}
+.crear-resultado video {
+  width: 100%;
+  max-width: 300px;
+  aspect-ratio: 9 / 16;
+  border-radius: 16px;
+  background: #000;
+}
+.crear-bajar {
+  align-self: flex-start;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--amber, #9b7bff);
+  text-decoration: none;
+  border: 1px solid var(--borde, #2c2738);
+  border-radius: 999px;
+  padding: 8px 16px;
+}
+.crear-hechos {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  margin-top: 8px;
+}
+.crear-rejilla {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  gap: 12px;
+}
+.crear-ficha {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.crear-ficha video {
+  width: 100%;
+  aspect-ratio: 9 / 16;
+  border-radius: 12px;
+  background: #000;
+}
+.crear-ficha-pie {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 6px;
+  font-size: 12px;
+}
+.crear-ficha-pie span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+.crear-borrar {
+  font: inherit;
+  font-size: 12px;
+  border: 0;
+  background: transparent;
+  color: var(--texto-2, #b9b3c9);
+  cursor: pointer;
+  padding: 2px 4px;
+}
+.crear-nota {
+  font-size: 12px;
+  line-height: 1.5;
+  margin: 4px 0 0;
+}
