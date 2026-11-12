@@ -14,20 +14,44 @@ export const alPreguntar = (f: typeof preguntar) => void (preguntar = f)
  * sin respuesta, «Failed to fetch». Lo que solo lee se vuelve a pedir durante unos 15 s; lo que cambia algo no, porque
  * pudo haber llegado.
  */
+const espera = (ms: number) => new Promise((r) => setTimeout(r, ms))
+
+/**
+ * Al abrir, la app pide quince cosas a la vez. En el servidor del teléfono (un núcleo) eso termina en 503 y la pantalla se
+ * queda «mirando…» para siempre: por eso las peticiones salen de tres en tres, y lo que solo lee se reintenta.
+ */
+const MAXIMO = 3
+let enCurso = 0
+const cola: (() => void)[] = []
+
+async function turno(): Promise<void> {
+  if (enCurso < MAXIMO) return void enCurso++
+  await new Promise<void>((seguir) => cola.push(seguir))
+  enCurso++
+}
+
+function suelta(): void {
+  enCurso--
+  cola.shift()?.()
+}
+
 async function pedir(path: string, body?: unknown): Promise<Response> {
   for (let i = 0; ; i++) {
     let res: Response
+    await turno()
     try {
       res = await fetch(path, body === undefined ? undefined : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
     } catch {
+      suelta()
       if (body !== undefined || i >= 10) throw new Error('No se pudo hablar con Sloth: puede que se esté reiniciando. Intenta otra vez en unos segundos.')
-      await new Promise((r) => setTimeout(r, 1500))
+      await espera(1500)
       continue
     }
+    suelta()
     // Un 5xx es el servidor ocupado o reiniciándose, no una ruta que falte: en el teléfono, la pantalla se quedaba con
     // «aún no conoce esta función» y nada volvía a funcionar. Lo que solo lee se vuelve a pedir en vez de rendirse.
     if (res.status >= 500 && body === undefined && i < 4) {
-      await new Promise((r) => setTimeout(r, 800 * (i + 1)))
+      await espera(800 * (i + 1))
       continue
     }
     return res
