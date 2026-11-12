@@ -30,6 +30,7 @@ import { useSoltar } from './Soltar'
 import { CON_CHATGPT, conOpenCode, conPrimero, elegirModelos, lineaSubagentes, Modelos, type Avanzado } from './Modelos'
 import { AvisoEquipo } from './Equipo' // tu equipo
 import { MisVideos, Rejilla, VideoDe } from './MisVideos'
+import { CrearVideo } from './CrearVideo'
 import { Modelos3D } from './Modelos3D' // modelos 3D
 import { abrirPublicacion, Comunidad } from './Comunidad' // comunidad
 import { CompartirEstilo, ImportarEstilo } from './Estilos' // estilos compartidos
@@ -60,6 +61,7 @@ type View =
   | { kind: 'opciones' }
   | { kind: 'ideas'; canalId?: string }
   | { kind: 'videos'; estilo?: string }
+  | { kind: 'crear' }
   | { kind: 'modelos3d' } // modelos 3D
   | { kind: 'comunidad' } // comunidad
   | { kind: 'admin' } // Administrador, solo en la computadora del creador
@@ -80,6 +82,7 @@ function readHash(): View {
   if (kind === 'opciones') return { kind: 'opciones' }
   if (kind === 'ideas') return { kind: 'ideas', canalId: id || undefined }
   if (kind === 'mis-videos') return { kind: 'videos', estilo: id || undefined }
+  if (kind === 'crear-video') return { kind: 'crear' }
   if (kind === 'modelos-3d') return { kind: 'modelos3d' } // modelos 3D
   if (kind === 'comunidad' || kind === 'mejoras') return { kind: 'comunidad' } // comunidad (antes, Mejoras)
   if (kind === 'admin') return { kind: 'admin' }
@@ -98,7 +101,9 @@ function go(view: View) {
             ? `/ideas${view.canalId ? `/${view.canalId}` : ''}`
             : view.kind === 'videos'
               ? `/mis-videos${view.estilo ? `/${view.estilo}` : ''}`
-              : view.kind === 'modelos3d' // modelos 3D
+              : view.kind === 'crear'
+                ? '/crear-video'
+                : view.kind === 'modelos3d' // modelos 3D
                 ? '/modelos-3d'
                 : view.kind === 'comunidad' // comunidad
                 ? '/comunidad'
@@ -508,6 +513,15 @@ export function App() {
           </span>{' '}
           Mis videos
         </button>
+        <button className={`new-chat${view.kind === 'crear' ? ' active' : ''}`} onClick={() => go({ kind: 'crear' })} title={plegada ? 'Crear video' : undefined}>
+          <span className="new-chat-icon">
+            <svg viewBox="0 0 24 24" width="12" height="12" fill="none" stroke="currentColor" strokeWidth="2.2" strokeLinejoin="round">
+              <path d="M3 6.5h18v13H3z" />
+              <path d="M3 6.5 7 3l3 3.5M13 6.5 17 3l3 3.5M10.5 10.5l5 3-5 3z" />
+            </svg>
+          </span>{' '}
+          Crear video
+        </button>
         {/* modelos 3D */}
         <button className={`new-chat${view.kind === 'modelos3d' ? ' active' : ''}`} onClick={() => go({ kind: 'modelos3d' })} title={plegada ? 'Modelos 3D' : undefined}>
           <span className="new-chat-icon">
@@ -658,6 +672,7 @@ export function App() {
             }}
           />
         )}
+        {view.kind === 'crear' && <CrearVideo />}
         {view.kind === 'modelos3d' && <Modelos3D />} {/* modelos 3D */}
         {view.kind === 'comunidad' && <Comunidad />}
         {view.kind === 'admin' && esCreador && <Admin />}
