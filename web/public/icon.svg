@@ -1,0 +1,12 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512" role="img" aria-label="Sloth">
+  <!-- El icono de Sloth: cuadro violeta con un play (video) y un destello (el agente trabajando a la vista). -->
+  <defs>
+    <linearGradient id="sloth-fondo" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#b9a2ff" />
+      <stop offset="1" stop-color="#5b2ee0" />
+    </linearGradient>
+  </defs>
+  <rect width="512" height="512" rx="116" fill="url(#sloth-fondo)" />
+  <path d="M 212 172 L 362 256 L 212 340 Z" fill="#ffffff" stroke="#ffffff" stroke-width="26" stroke-linejoin="round" stroke-linecap="round" />
+  <circle cx="384" cy="128" r="19" fill="#ffffff" fill-opacity="0.92" />
+</svg>

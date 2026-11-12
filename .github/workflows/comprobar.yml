@@ -1,0 +1,77 @@
+# Comprueba lo que llegaría a la app instalada antes de publicar desde venta.
+# Usa el empaquetado real en cada sistema (las tres de Mac: Intel, Apple Silicon y la de macOS 12, que prueba también
+# con Node 22); deja los archivos en el runner.
+name: Comprobar Sloth
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: comprobar-${{ github.event.pull_request.number || github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  comprobar:
+    strategy:
+      fail-fast: false
+      matrix:
+        # La de macOS 12 sale en un Mac con Intel, con Electron 43 y Node 22: Electron 44 y Node 24 ya no abren ahí
+        # (SLOTH_MAC12, scripts/compilar.mjs).
+        include:
+          - { os: windows-latest, node: 24.18.0 }
+          - { os: macos-15-intel, node: 24.18.0 }
+          - { os: macos-15, node: 24.18.0 }
+          - { os: macos-15-intel, node: 22.23.4, mac12: '1' }
+          - { os: ubuntu-latest, node: 24.18.0 }
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 60
+    steps:
+      - uses: actions/checkout@v5
+      - uses: actions/setup-node@v5
+        with:
+          node-version: ${{ matrix.node }}
+          cache: npm
+      - run: npm ci --no-audit --no-fund
+      # Las pruebas de YouTube generan videos y extraen sus fotogramas con FFmpeg.
+      - name: Instalar FFmpeg en Windows
+        if: runner.os == 'Windows'
+        run: choco install ffmpeg --yes --no-progress
+      - name: Instalar FFmpeg en Mac
+        if: runner.os == 'macOS'
+        run: brew install ffmpeg
+        env:
+          HOMEBREW_NO_AUTO_UPDATE: '1'
+      - name: Instalar FFmpeg en Linux
+        if: runner.os == 'Linux'
+        # Si los servidores de Ubuntu se atoran, falla en minutos en vez de colgarse horas; reintenta cada descarga.
+        timeout-minutes: 10
+        run: |
+          sudo apt-get -o Acquire::Retries=3 update
+          sudo apt-get -o Acquire::Retries=3 install --yes ffmpeg
+      - run: ffmpeg -version
+      - run: npm test
+      # La sintaxis de los scripts de las skills; sin videos hechos, las plantillas se saltan.
+      - run: npm run comprobar-skills
+      # compilar incluye el typecheck y comprueba los paquetes que llevará el servidor.
+      # En Windows se arma y se ejecuta el NSIS real: empaquetar sin instalar no descubre fallos del extractor.
+      - run: npm run compilar -- ${{ runner.os != 'Windows' && '--sin-instalador' || '' }}
+        env:
+          SLOTH_MAC12: ${{ matrix.mac12 }}
+          SLOTH_TUYO: ${{ secrets.SLOTH_TUYO }}
+          # Reproduce también los secretos vacíos que GitHub entrega cuando faltan.
+          # Mac usa la firma ad hoc; esta comprobación no necesita credenciales.
+          CSC_LINK: ''
+          CSC_KEY_PASSWORD: ''
+          APPLE_ID: ''
+          APPLE_APP_SPECIFIC_PASSWORD: ''
+          APPLE_TEAM_ID: ''
+      - name: Instalar y actualizar en Windows sin abrir Sloth
+        if: runner.os == 'Windows'
+        run: node scripts/comprobar-instalacion.mjs

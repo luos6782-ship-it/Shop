@@ -1,0 +1,80 @@
+name: APK Android
+
+# El APK se compila aquí porque hace falta el SDK de Android y Gradle, que no están en la máquina donde se edita el
+# repo. Al terminar, el .apk queda en los artefactos de la ejecución: Actions → esta ejecución → Artifacts → sloth-apk.
+on:
+  workflow_dispatch:
+    inputs:
+      servidor:
+        description: 'Dirección de Sloth que abrirá el APK (vacío = la app publicada)'
+        required: false
+        default: 'https://qdppxqss2z.dev.onappjet.com'
+  push:
+    branches: [main, appjet]
+    paths:
+      - 'android-web/**'
+      - 'capacitor.config.ts'
+      - 'web/public/icon-*.png'
+      - '.github/workflows/android-apk.yml'
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: android-actions/setup-android@v3
+
+      # `--ignore-scripts`: Electron y Playwright bajan binarios que el APK no usa.
+      - name: Dependencias
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      # La primera vez no hay proyecto nativo: `cap add` lo crea (Gradle, manifiesto, actividades) y `sync` copia la
+      # pantalla de `android-web/` dentro del APK.
+      - name: Proyecto Android
+        env:
+          # Sin dirección escrita a mano, el APK abre la app publicada; el input sigue sirviendo para apuntarlo a una
+          # computadora de la red Wi-Fi.
+          SLOTH_URL: ${{ github.event.inputs.servidor || 'https://qdppxqss2z.dev.onappjet.com' }}
+        run: |
+          if [ ! -d android ]; then npx cap add android; fi
+          npx cap sync android
+
+      - name: Iconos de Sloth
+        run: |
+          for archivo in android/app/src/main/res/mipmap-*/ic_launcher.png \
+                         android/app/src/main/res/mipmap-*/ic_launcher_round.png \
+                         android/app/src/main/res/mipmap-*/ic_launcher_foreground.png; do
+            [ -f "$archivo" ] || continue
+            medida=$(identify -format '%wx%h' "$archivo")
+            convert web/public/icon-512.png -resize "$medida" "$archivo"
+          done
+
+      # Sin firma fija, Gradle genera una distinta en cada compilación y Android rechaza instalar el APK nuevo
+      # encima del anterior («Aplicación no instalada»). Con esta, el APK se instala y se actualiza sin desinstalar.
+      - name: Firma de depuración fija
+        run: |
+          mkdir -p "$HOME/.android"
+          cp .github/android-debug.keystore "$HOME/.android/debug.keystore"
+
+      - name: Compilar el APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sloth-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

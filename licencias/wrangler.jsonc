@@ -1,0 +1,75 @@
+// El cobro de Sloth (ver src/index.ts), en la cuenta de Cloudflare de Sloth, como la nube. Se
+// despliega con `npm run licencias -- deploy` desde la raíz. Los secretos van con `npm run licencias -- secret put X`:
+// PAYPAL_CLIENT_ID y PAYPAL_SECRET (las de la app de PayPal del modo `PAYPAL_MODO`, en developer.paypal.com), PAYPAL_WEBHOOK_ID
+// (el id del webhook de esa app, a ORIGEN/webhook/paypal, con todos los eventos; `npm run paypal` pone los tres), y de las suscripciones de Mercado Pago
+// de antes: MP_ACCESS_TOKEN (producción de «Sloth pruebas», la app de la vendedora de prueba), MP_ACCESS_TOKEN_PRODUCCION
+// (producción de la aplicación «Sloth» real), MP_WEBHOOK_SECRET (la clave secreta de los webhooks de la real),
+// NOWPAYMENTS_API_KEY y NOWPAYMENTS_IPN_SECRET (la llave de la API y la clave de los avisos IPN, en Settings del panel de
+// NOWPayments, del modo `NOWPAYMENTS_MODO`; sin ellas no se ofrece pagar con cripto), STRIPE_SECRET_KEY y
+// STRIPE_WEBHOOK_SECRET (la tarjeta, con Stripe: `npm run stripe` pone las dos con la llave secreta; sin ellas no se ofrece),
+// VOICES_PK_LIVE, VOICES_PK_LIVE_2, VOICES_PK_LIVE_3… (las llaves de socio `pk_live_…` de Voices Cloning, una por secreto,
+// para las voces de src/voz.ts; una nueva va en el siguiente número libre y nunca encima de otra, que tiene sus usuarios),
+// FIRMA (la llave privada Ed25519 en PKCS8 y base64; la pública va en server/licencia.ts), PUBLICAR (la llave de
+// `npm run publicar`, solo en los secretos de GitHub: sube versiones) y ADMIN (la del creador, en
+// %APPDATA%\sloth\licencias\admin.txt: administra la comunidad, las voces y los apoyos a mano, no publica). La base de datos se crea con
+// `npm run licencias -- d1 migrations apply sloth-licencias --remote`. El instalador vive en el bucket DESCARGAS.
+{
+  "name": "sloth-licencias",
+  "main": "src/index.ts",
+  "compatibility_date": "2026-10-01",
+  // workers.dev sigue para las apps de antes, que llaman ahí; las nuevas, a api.sloth.vancci.org (zona vancci.org de esta cuenta).
+  "workers_dev": true,
+  "routes": [{ "pattern": "api.sloth.vancci.org", "custom_domain": true }],
+  "observability": { "enabled": true },
+  // Cada mañana (9:00 de la Ciudad de México): el aviso de los cobros que vienen. Cada 10 minutos: las claves que no
+  // salieron por correo al confirmarse el pago (`reenviarClaves`), los créditos mensuales de voz con su correo y los premios
+  // de la rifa que quedaron a medias.
+  "triggers": { "crons": ["0 15 * * *", "*/10 * * * *"] },
+  "d1_databases": [{ "binding": "DB", "database_name": "sloth-licencias", "database_id": "0de2b337-32cc-474e-bcb4-14cac3181a5e" }],
+  "r2_buckets": [{ "binding": "DESCARGAS", "bucket_name": "sloth-descargas" }],
+  "vars": {
+    // `prueba` cobra en el sandbox de PayPal; `produccion`, de verdad. Al cambiarlo, cambian también sus tres secretos. Al
+    // pasar a `produccion`, borra las suscripciones de prueba (no existen en la cuenta real) sin tocar los lugares gratis
+    // ni las cuentas, que son de personas de verdad:
+    // DELETE FROM licencias WHERE plan IN ('mensual', 'anual') AND modo = 'prueba'; DELETE FROM equipos WHERE clave NOT IN (SELECT clave FROM licencias);
+    "PAYPAL_MODO": "produccion",
+    // Con cuál de los dos tokens se leen y cancelan las suscripciones de Mercado Pago de antes.
+    "MP_MODO": "produccion",
+    // `prueba` cobra en el sandbox de NOWPayments (account-sandbox.nowpayments.io, con sus propias llaves); `produccion`, de verdad.
+    "NOWPAYMENTS_MODO": "produccion",
+    "ORIGEN": "https://api.sloth.vancci.org",
+    // GRATIS: los lugares gratis de por vida que se dieron cuando Sloth se vendía (ya no se dan). El apoyo cuesta lo mismo
+    // para todos, en MONEDA e IVA incluido; las FUNDADORES primeras personas que apoyan (hasta FUNDADORES_HASTA si se pone,
+    // una fecha ISO) son fundadoras. Cada suscripción conserva su monto y su moneda aunque estos cambien. Solo cuentan las
+    // pagadas de verdad (modo produccion), no las de prueba.
+    "GRATIS": 25,
+    "FUNDADORES": 25,
+    "PRECIO_MENSUAL": 15,
+    "PRECIO_ANUAL": 150,
+    // El mensual y el de una vez también van con el monto que elija cada quien, desde APOYO_MINIMO; desde APOYO_GRANDE al
+    // mes, con la insignia de apoyo grande en la comunidad.
+    "APOYO_MINIMO": 1,
+    "APOYO_GRANDE": 30,
+    // Con Mercado Pago, que solo cobra en pesos: los mismos, en MXN (la página dice a cuántos dólares equivalen).
+    "PRECIO_MENSUAL_MXN": 299,
+    "PRECIO_ANUAL_MXN": 2990,
+    "APOYO_MINIMO_MXN": 20,
+    "APOYO_GRANDE_MXN": 599,
+    // Con cripto, el monto elegido va desde aquí: NOWPayments no acepta menos de unos $11 en USDT por TRON, la red más
+    // usada en Binance (BTC pide unos $21). El sugerido y el anual no cambian.
+    "APOYO_MINIMO_CRIPTO": 12,
+    // "1": no se abren apoyos nuevos con PayPal y la página no lo ofrece (desde el 5 de noviembre de 2026, mientras PayPal
+    // revisa la cuenta). Las suscripciones de antes siguen. Para volver a ofrecerlo, quítalo y despliega.
+    "SIN_PAYPAL": "1",
+    "MONEDA": "USD",
+    // Los correos salen de un dominio verificado en Resend (con su RESEND_API_KEY como secreto) y se responden en soporte@vancci.org.
+    // Los créditos de voz de Voices Cloning con que se da de alta a cada quien la primera vez que abre sus voces. En 0, solo
+    // las ve quien recibió créditos del creador (Administrador, en su Sloth).
+    "VOZ_CREDITOS": 0,
+    // "1": Voices Cloning es solo del creador, aunque alguien más tenga créditos (desde el 6 de noviembre de 2026, mientras
+    // se prueba). La actualización con créditos mensuales lo abre al terminar de publicarse (`voz-mensual.json` en R2).
+    "VOZ_SOLO_CREADOR": "1",
+    "CORREO_DE": "Sloth <avisos@vancci.org>",
+    "CORREO_RESPUESTA": "soporte@vancci.org"
+  }
+}
