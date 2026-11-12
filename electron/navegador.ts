@@ -443,6 +443,9 @@ function hacer(hilo: string, accion: AccionNavegador) {
  * (que se abre si no estaba). Lo que llega de una página web (con `Origin`) o sin el secreto se cierra.
  */
 function relevar(archivo: string) {
+  // El relevo solo existe en la app de escritorio y escucha en esta computadora; `SLOTH_HOST` lo deja mover a otra
+  // interfaz cuando hace falta (una máquina de pruebas dentro de un contenedor).
+  const ESCUCHA = process.env.SLOTH_HOST ?? '127.0.0.1'
   let antes: { puerto?: number; secreto?: string } = {}
   try {
     antes = JSON.parse(readFileSync(archivo, 'utf8'))
@@ -460,10 +463,10 @@ function relevar(archivo: string) {
   let puerto = typeof antes.puerto === 'number' ? antes.puerto : 0
   http.on('error', (e: NodeJS.ErrnoException) => {
     // Su puerto de la otra vez ya es de otro o Windows lo reservó (rangos excluidos de Hyper-V/WinNAT, EACCES): cualquiera libre.
-    if ((e.code === 'EADDRINUSE' || e.code === 'EACCES') && puerto) http.listen((puerto = 0), '127.0.0.1')
+    if ((e.code === 'EADDRINUSE' || e.code === 'EACCES') && puerto) http.listen((puerto = 0), ESCUCHA)
     else console.error('El navegador integrado no puede escuchar al agente:', e.message)
   })
-  http.listen(puerto, '127.0.0.1', () => {
+  http.listen(puerto, ESCUCHA, () => {
     // `redes` y `voz`: tiene esas páginas, cada una con su perfil y sus cookies (una ventana de antes no).
     guardar(archivo, JSON.stringify({ puerto: (http.address() as AddressInfo).port, secreto, pid: process.pid, redes: true, voz: true }))
   })
