@@ -3,6 +3,13 @@ node_modules
 dist
 /trabajo/
 
+# El proyecto nativo de Android lo genera `npx cap add android` (CI o tu computadora): no se versiona el armado.
+/android/app/build/
+/android/.gradle/
+/android/build/
+/android/local.properties
+/android/app/src/main/assets/public/
+
 # Llaves y certificados (el repo es público): la firma de Apple y las llaves van solo en los secretos de GitHub.
 .env
 .env.*
