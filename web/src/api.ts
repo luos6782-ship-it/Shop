@@ -16,12 +16,21 @@ export const alPreguntar = (f: typeof preguntar) => void (preguntar = f)
  */
 async function pedir(path: string, body?: unknown): Promise<Response> {
   for (let i = 0; ; i++) {
+    let res: Response
     try {
-      return await fetch(path, body === undefined ? undefined : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
+      res = await fetch(path, body === undefined ? undefined : { method: 'POST', headers: { 'content-type': 'application/json' }, body: JSON.stringify(body) })
     } catch {
       if (body !== undefined || i >= 10) throw new Error('No se pudo hablar con Sloth: puede que se esté reiniciando. Intenta otra vez en unos segundos.')
       await new Promise((r) => setTimeout(r, 1500))
+      continue
     }
+    // Un 5xx es el servidor ocupado o reiniciándose, no una ruta que falte: en el teléfono, la pantalla se quedaba con
+    // «aún no conoce esta función» y nada volvía a funcionar. Lo que solo lee se vuelve a pedir en vez de rendirse.
+    if (res.status >= 500 && body === undefined && i < 4) {
+      await new Promise((r) => setTimeout(r, 800 * (i + 1)))
+      continue
+    }
+    return res
   }
 }
 
@@ -30,6 +39,9 @@ export async function api<T = any>(path: string, body?: unknown): Promise<T> {
   // Sin JSON es que el servidor no conoce la ruta: casi siempre, un cambio en server/ que aún no se ha reiniciado. Vite
   // contesta esas rutas con la página (200, HTML) o con un 404.
   const data = await res.json().catch(() => {
+    // Solo un 404 (o la página HTML de Vite) es que la ruta no exista. Un 5xx es que el servidor está ocupado o
+    // reiniciándose: decir «no conoce esta función» mandaba a pulsar un botón que no lo arreglaba.
+    if (res.status >= 500) throw new Error('El servidor está ocupado o reiniciándose. Intenta otra vez en unos segundos.')
     const desconocida = res.status === 404 || res.headers.get('content-type')?.includes('text/html')
     throw new Error(desconocida ? 'El servidor aún no conoce esta función: pulsa «Reiniciar backend».' : `El servidor respondió ${res.status}`)
   })
