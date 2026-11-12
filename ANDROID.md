@@ -1,17 +1,32 @@
 # Sloth en Android
 
+## 0. Usarlo ahora en el teléfono (sin instalar nada)
+
+Sloth ya está publicado y acepta el teléfono por HTTPS:
+
+**https://qdppxqss2z.dev.onappjet.com**
+
+Ábrela en Chrome del teléfono. Para que quede como una app (icono propio, pantalla completa, sin barra del navegador):
+menú de Chrome → **Instalar aplicación** / **Añadir a pantalla de inicio**. Es la PWA: `web/public/manifest.webmanifest`,
+`web/public/sw.js` (no guarda `/api/`) y los iconos 192/512 ya viajan en el despliegue.
+
+En ese servidor no están las herramientas de la computadora (FFmpeg, Python, los agentes instalados), así que los estilos
+que las necesitan avisan que faltan; las cuentas y llaves se conectan en **Opciones → Agentes**.
+
+## El APK
+
 El APK de Sloth es **la misma interfaz** dentro de una ventana Android (WebView, con Capacitor). Sloth trabaja en la
 computadora —los agentes, FFmpeg, Python y Remotion corren ahí—, así que el APK no trae el servidor: se conecta al que
-ya corre en tu equipo, por la red Wi-Fi.
+ya corre. Sin dirección propia abre la app publicada de arriba; con `SLOTH_URL` abre tu computadora.
 
 ## 1. Conseguir el APK
 
 El APK necesita el SDK de Android y Gradle. Aquí no se compila (este entorno solo compila web), así que lo arma GitHub
 Actions y lo deja listo para descargar:
 
-1. En GitHub, **Actions → APK Android → Run workflow**. Si quieres que el APK abra Sloth directo, escribe en `servidor`
-   la dirección de tu computadora (por ejemplo `http://192.168.1.10:4848`). Si lo dejas vacío, el APK abre una pantalla
-   para escribirla una vez.
+1. En GitHub, **Actions → APK Android → Run workflow**. Ya viene con
+   `https://qdppxqss2z.dev.onappjet.com` en `servidor`, así que el APK abre la app publicada. Si quieres que abra tu
+   computadora, escribe ahí su dirección (por ejemplo `http://192.168.1.10:4848`).
 2. Al terminar la ejecución, descarga el artefacto **`sloth-apk`** y descomprime `app-debug.apk`.
 3. Pasa el archivo al teléfono e instálalo (Android pedirá permitir «instalar apps desconocidas» para esa app).
 
