@@ -1,0 +1,53 @@
+{
+  "name": "sloth-2",
+  "version": "0.4.0",
+  "private": true,
+  "license": "MIT",
+  "type": "module",
+  "description": "Sloth 2.0: cada skill es una card; el agente trabaja a la vista, como en T3 Code",
+  "scripts": {
+    "start": "node scripts/start.mjs",
+    "test": "node --import tsx --test server/*.test.ts shared/*.test.ts web/src/*.test.ts electron/*.test.ts licencias/src/*.test.ts",
+    "typecheck": "tsc --noEmit && tsc --noEmit -p nube && tsc --noEmit -p licencias",
+    "comprobar-skills": "node scripts/comprobar-skills.mjs",
+    "hilo": "node scripts/hilo.mjs",
+    "medir-videos": "node scripts/medir-videos.mjs",
+    "redes": "node --import tsx scripts/redes.ts",
+    "nube": "node scripts/nube.mjs",
+    "licencias": "node scripts/nube.mjs --licencias",
+    "paypal": "node scripts/paypal.mjs",
+    "stripe": "node scripts/stripe.mjs",
+    "fundador": "node scripts/fundador.mjs",
+    "compilar": "node scripts/compilar.mjs",
+    "publicar": "node scripts/publicar.mjs"
+  },
+  "dependencies": {
+    "@anthropic-ai/claude-agent-sdk": "^0.3.311",
+    "@openai/codex": "^0.164.0",
+    "@opencode/client": "2.2.1",
+    "@playwright/mcp": "0.0.83",
+    "@vitejs/plugin-react": "^6.1.2",
+    "marked": "^18.1.0",
+    "playwright-core": "^1.64.0",
+    "react": "^19.3.0",
+    "react-dom": "^19.3.0",
+    "tsx": "^4.23.15",
+    "vite": "^8.3.3",
+    "ws": "^8.22.0"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "@types/react": "^19.3.0",
+    "@types/react-dom": "^19.3.0",
+    "@types/ws": "^8.18.2",
+    "electron": "^45.0.0",
+    "electron-builder": "^26.15.3",
+    "electron-updater": "^6.8.9",
+    "esbuild": "^0.28.2",
+    "koffi": "^3.3.3",
+    "typescript": "^7.0.2"
+  },
+  "overrides": {
+    "minimatch@>=7 <11.0.1": "^11.0.5"
+  }
+}

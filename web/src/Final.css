@@ -1,0 +1,15 @@
+/* El video terminado, arriba de la fase Entrega (Final.tsx): bajarlo, verlo en su carpeta y pedir un cambio de un
+   clic. */
+.final { display: flex; flex-direction: column; gap: 12px; margin-bottom: 28px; padding: 16px 18px; border-radius: var(--radio); background: var(--panel-2); border: 1px solid var(--line); animation: etapa-entra 0.4s ease-out; }
+.final-titulo { font-weight: 650; font-size: 15px; }
+.final-fila { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.final-boton { display: inline-flex; align-items: center; gap: 7px; padding: 6px 13px; border-radius: 8px; border: 1px solid var(--line); color: var(--text); font-size: 13px; text-decoration: none; transition: border-color 0.15s, background 0.15s; }
+.final-boton:hover { border-color: var(--muted); }
+.final-boton.principal { background: var(--amber); border-color: var(--amber); color: var(--sobre-ambar); font-weight: 650; }
+.final-boton.principal:hover { background: var(--amber-2); border-color: var(--amber-2); }
+.final-cambios { display: flex; flex-wrap: wrap; align-items: center; gap: 6px; padding-top: 12px; border-top: 1px solid var(--line); }
+.final-cambios > span:first-child { margin-right: 4px; }
+.final-cambios button { padding: 4px 11px; border-radius: 999px; border: 1px solid var(--line); color: var(--muted); font-size: 12.5px; transition: color 0.15s, border-color 0.15s, background 0.15s; }
+.final-cambios button:hover:not(:disabled) { color: var(--text); border-color: var(--muted); }
+.final-cambios button.on { color: var(--amber); border-color: var(--amber); background: var(--amber-tinte); opacity: 1; }
+
