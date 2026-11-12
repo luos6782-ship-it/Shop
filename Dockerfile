@@ -21,7 +21,9 @@ RUN npm run build
 
 FROM node:26-alpine
 # La fecha renueva esta capa: sin ella, el builder reutiliza paquetes viejos del sistema.
-RUN echo "os-refresh 2026-11-12" && apk upgrade --no-cache && apk add --no-cache ffmpeg python3
+# Sin ffmpeg ni python aquí a propósito: metían glib (ALPINE-CVE-2021-27219, sin arreglo en la rama) y bloqueaban la
+# imagen. El servidor no los necesita para arrancar; los videos se siguen armando en la computadora.
+RUN echo "os-refresh 2026-11-12" && apk upgrade --no-cache
 WORKDIR /app
 COPY --from=build /app ./
 ENV NODE_ENV=production
