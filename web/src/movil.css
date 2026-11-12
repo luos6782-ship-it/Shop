@@ -1,0 +1,110 @@
+/*
+ * El teléfono: la misma Sloth, en una columna. La barra lateral pasa a ser un cajón que abre el botón de arriba a la
+ * izquierda, el composer queda pegado abajo (encima del teclado y de la barra del sistema) y todo lo que se toca mide
+ * al menos 44 px. La computadora no cambia: todo va dentro de la media query.
+ */
+
+.boton-menu,
+.menu-fondo { display: none; }
+
+@media (max-width: 860px) {
+  /* `dvh`: con la barra del navegador dentro o fuera, la app mide justo la pantalla y no queda un trozo cortado. */
+  html,
+  body,
+  #root { height: 100dvh; }
+
+  body { overscroll-behavior: none; }
+
+  .app,
+  .app.plegada { grid-template-columns: 1fr; height: 100dvh; }
+
+  .sidebar {
+    position: fixed;
+    inset: 0 auto 0 0;
+    z-index: 60;
+    width: min(86vw, 340px);
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    transform: translateX(-102%);
+    transition: transform 0.22s ease;
+    box-shadow: 0 0 40px rgb(0 0 0 / 55%);
+  }
+
+  .menu-abierto .sidebar { transform: none; }
+
+  .menu-fondo {
+    display: block;
+    position: fixed;
+    inset: 0;
+    z-index: 55;
+    background: rgb(0 0 0 / 45%);
+  }
+
+  .menu-fondo[hidden] { display: none; }
+
+  .boton-menu {
+    display: grid;
+    place-items: center;
+    position: fixed;
+    z-index: 70;
+    top: calc(env(safe-area-inset-top) + 8px);
+    left: calc(env(safe-area-inset-left) + 8px);
+    width: 40px;
+    height: 40px;
+    border-radius: 12px;
+    border: 1px solid var(--line);
+    background: var(--panel);
+    color: var(--text);
+  }
+
+  /* La barra plegada de la computadora no aplica aquí: el cajón siempre muestra los títulos. */
+  .app.plegada .sidebar { width: min(86vw, 340px); }
+  .app.plegada .brand { padding: 16px 16px 12px; gap: 10px; font-size: 15px; }
+  .app.plegada .new-chat,
+  .app.plegada .buscar { justify-content: flex-start; gap: 9px; padding: 0 8px; font-size: 13px; }
+  .app.plegada .barra-seccion { width: auto; height: auto; margin: 0; padding: 14px 8px 5px; background: none; font-size: 11px; }
+  .app.plegada .session-row { justify-content: flex-start; padding: 11px 8px; }
+  .app.plegada .pie button { justify-content: flex-start; gap: 9px; padding: 0 8px; font-size: 13px; }
+
+  /* Nada de letra de 12 px en campos: iOS hace zoom a la página y ya no se puede volver. */
+  input:not([type='checkbox']):not([type='radio']),
+  textarea,
+  select { font-size: 16px; }
+
+  /* La cabecera deja su esquina al botón del cajón. */
+  .session-head { padding: calc(env(safe-area-inset-top) + 10px) 12px 10px 56px; }
+  .session-head .mono { font-size: 13px; }
+
+  .session-chat { min-height: 0; }
+
+  .session-composer {
+    padding: 0 12px calc(env(safe-area-inset-bottom) + 12px);
+    max-width: none;
+  }
+
+  .composer-bar { gap: 6px; }
+
+  /* La pantalla de un chat nuevo: menos aire a los lados y las cards de dos en dos. */
+  .new-session { padding: calc(env(safe-area-inset-top) + 56px) 12px 12px; gap: 18px; }
+  .new-top { gap: 10px; }
+  .cards { grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap: 10px; }
+  .estante { gap: 8px; }
+
+  /* Hojas y diálogos: pegados abajo, como en cualquier app del teléfono. */
+  .modal,
+  .hoja { padding: 12px; }
+  .modal-caja,
+  .hoja-caja { max-width: none; width: 100%; max-height: 88dvh; overflow-y: auto; }
+}
+
+/* El teléfono en horizontal tiene poco alto: se recorta el aire, no los controles. */
+@media (max-width: 860px) and (max-height: 480px) {
+  .new-session { padding-top: calc(env(safe-area-inset-top) + 48px); gap: 10px; }
+  .cards { grid-template-columns: repeat(auto-fill, minmax(120px, 1fr)); }
+}
+
+/* Con puntero fino (computadora) el cajón no existe: la barra está siempre a la vista. */
+@media (min-width: 861px) {
+  .boton-menu,
+  .menu-fondo { display: none; }
+}
