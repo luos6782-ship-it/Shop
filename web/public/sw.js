@@ -2,7 +2,7 @@
  * El service worker solo hace que Sloth se pueda instalar desde Chrome en Android (y que el armazón de la interfaz
  * abra sin red). No toca `/api/`: ahí vive el trabajo del servidor y nunca se guarda.
  */
-const CACHE = 'sloth-ui-1'
+const CACHE = 'sloth-ui-2'
 
 self.addEventListener('install', () => self.skipWaiting())
 
