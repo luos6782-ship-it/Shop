@@ -6,7 +6,10 @@ import type { IncomingMessage } from 'node:http'
  * ese adaptador comprueba además el state único y PKCE antes de guardar una cuenta o sus permisos.
  */
 export function peticionDeConfianza(req: Pick<IncomingMessage, 'headers' | 'method' | 'url'>, puerto: number | string): boolean {
-  const propios = [`localhost:${puerto}`, `127.0.0.1:${puerto}`]
+  // `SLOTH_HOSTS` suma las direcciones desde las que se abre Sloth fuera de esta computadora: la del APK de Android o la
+  // de otro equipo de la red (`SLOTH_HOSTS=192.168.1.10:4848`). Sin ella, solo la ventana de esta máquina.
+  const extra = (process.env.SLOTH_HOSTS ?? '').split(',').map((host) => host.trim()).filter(Boolean)
+  const propios = [`localhost:${puerto}`, `127.0.0.1:${puerto}`, ...extra]
   if (!propios.includes(req.headers.host ?? '')) return false
   const origen = req.headers.origin
   const propio = !origen || propios.some((p) => origen === `http://${p}`)

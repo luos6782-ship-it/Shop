@@ -19,7 +19,12 @@
     "stripe": "node scripts/stripe.mjs",
     "fundador": "node scripts/fundador.mjs",
     "compilar": "node scripts/compilar.mjs",
-    "publicar": "node scripts/publicar.mjs"
+    "publicar": "node scripts/publicar.mjs",
+    "android:sync": "npx cap sync android",
+    "android:apk": "npx cap sync android && cd android && ./gradlew assembleDebug"
+  },
+  "_comentario_scripts": {
+    "android:apk": "Compila el APK de depuración en android/app/build/outputs/apk/debug/app-debug.apk (necesita el SDK de Android)."
   },
   "dependencies": {
     "@anthropic-ai/claude-agent-sdk": "^0.3.311",

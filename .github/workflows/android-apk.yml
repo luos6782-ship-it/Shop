@@ -1,0 +1,57 @@
+name: APK Android
+
+# El APK se compila aquí porque hace falta el SDK de Android y Gradle, que no están en la máquina donde se edita el
+# repo. Al terminar, el .apk queda en los artefactos de la ejecución: Actions → esta ejecución → Artifacts → sloth-apk.
+on:
+  workflow_dispatch:
+    inputs:
+      servidor:
+        description: 'Dirección de Sloth que abrirá el APK (vacío = pantalla para escribirla)'
+        required: false
+        default: ''
+  push:
+    branches: [main, appjet]
+    paths:
+      - 'android-web/**'
+      - 'android/**'
+      - 'capacitor.config.ts'
+      - '.github/workflows/android-apk.yml'
+
+jobs:
+  apk:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '24'
+          cache: npm
+
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - uses: android-actions/setup-android@v3
+
+      # `--ignore-scripts`: Electron y Playwright bajan binarios que el APK no usa.
+      - name: Dependencias
+        run: npm ci --ignore-scripts --no-audit --no-fund
+
+      - name: Copiar la pantalla de conexión al proyecto Android
+        env:
+          SLOTH_URL: ${{ github.event.inputs.servidor }}
+        run: npx cap sync android
+
+      - name: Compilar el APK
+        run: |
+          cd android
+          chmod +x gradlew
+          ./gradlew assembleDebug --no-daemon
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: sloth-apk
+          path: android/app/build/outputs/apk/debug/app-debug.apk
+          if-no-files-found: error

@@ -4,6 +4,10 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <link rel="icon" href="/icon.svg" />
+    <link rel="apple-touch-icon" href="/icon-192.png" />
+    <link rel="manifest" href="/manifest.webmanifest" />
+    <meta name="theme-color" content="#171512" />
+    <meta name="mobile-web-app-capable" content="yes" />
     <title>Sloth</title>
   </head>
   <body>
@@ -16,5 +20,10 @@
       })
     </script>
     <script type="module" src="/src/main.tsx"></script>
+    <script type="module">
+      // Solo con HTTPS (donde el navegador de Android deja instalar la app); en la app de escritorio, que va por
+      // `http://localhost`, no se registra y nada cambia.
+      if (location.protocol === 'https:') navigator.serviceWorker?.register('/sw.js').catch(() => {})
+    </script>
   </body>
 </html>

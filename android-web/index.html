@@ -1,0 +1,113 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <meta name="theme-color" content="#171512" />
+    <title>Sloth</title>
+    <style>
+      /* La paleta de Sloth (web/src/styles.css), para que el APK se vea como la app de escritorio. */
+      :root {
+        --fondo: #171512;
+        --tinta: #ede6d6;
+        --crema: #f2e7cf;
+        --oro: #e8a33d;
+        --tenue: #9a927f;
+      }
+      * { box-sizing: border-box; }
+      body {
+        margin: 0;
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        padding: 24px;
+        background: var(--fondo);
+        color: var(--tinta);
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+      }
+      main { width: 100%; max-width: 420px; }
+      img { width: 88px; height: 88px; display: block; margin: 0 auto 18px; }
+      h1 { margin: 0 0 6px; font-size: 26px; text-align: center; }
+      p { margin: 0 0 20px; color: var(--tenue); font-size: 14px; line-height: 1.5; text-align: center; }
+      label { display: block; font-size: 13px; color: var(--tenue); margin-bottom: 8px; }
+      input {
+        width: 100%;
+        padding: 14px;
+        font-size: 16px;
+        color: var(--tinta);
+        background: #221f1a;
+        border: 1px solid #3a352c;
+        border-radius: 12px;
+        outline: none;
+      }
+      input:focus { border-color: var(--oro); }
+      button {
+        width: 100%;
+        margin-top: 14px;
+        padding: 15px;
+        font-size: 16px;
+        font-weight: 600;
+        color: #171512;
+        background: var(--oro);
+        border: 0;
+        border-radius: 12px;
+      }
+      button:active { opacity: 0.85; }
+      .error { margin-top: 12px; color: #e8734d; font-size: 13px; min-height: 18px; text-align: center; }
+      .ayuda { margin-top: 22px; font-size: 12px; color: var(--tenue); line-height: 1.6; }
+      code { color: var(--crema); }
+    </style>
+  </head>
+  <body>
+    <main>
+      <img src="icon.svg" alt="Sloth" />
+      <h1>Conecta tu Sloth</h1>
+      <p>Escribe la dirección de la computadora donde corre Sloth.</p>
+
+      <label for="servidor">Dirección</label>
+      <input id="servidor" type="url" inputmode="url" autocapitalize="none" autocorrect="off" spellcheck="false"
+        placeholder="http://192.168.1.10:4848" />
+      <button id="abrir" type="button">Abrir Sloth</button>
+      <div class="error" id="error"></div>
+
+      <div class="ayuda">
+        En la app de escritorio, <b>Opciones → Acceso desde el teléfono</b> muestra esta dirección y deja el servidor
+        listo para recibirla. Las dos cosas tienen que estar en la misma red Wi-Fi.
+      </div>
+    </main>
+    <script>
+      // La dirección se guarda solo en este teléfono; la app la vuelve a proponer la próxima vez que se abre.
+      const clave = 'sloth-servidor'
+      const campo = document.getElementById('servidor')
+      const error = document.getElementById('error')
+
+      function normalizar(texto) {
+        let valor = (texto || '').trim()
+        if (!valor) return ''
+        if (!/^https?:\/\//i.test(valor)) valor = 'http://' + valor
+        return valor.replace(/\/+$/, '')
+      }
+
+      const guardada = localStorage.getItem(clave)
+      const deEnlace = new URLSearchParams(location.search).get('url')
+      campo.value = normalizar(deEnlace || guardada || '')
+
+      function abrir() {
+        const url = normalizar(campo.value)
+        if (!/^https?:\/\/[^/\s]+(:\d+)?$/i.test(url)) {
+          error.textContent = 'Escribe una dirección como http://192.168.1.10:4848'
+          return
+        }
+        localStorage.setItem(clave, url)
+        error.textContent = ''
+        location.replace(url)
+      }
+
+      document.getElementById('abrir').addEventListener('click', abrir)
+      campo.addEventListener('keydown', (evento) => {
+        if (evento.key === 'Enter') abrir()
+      })
+    </script>
+  </body>
+</html>
